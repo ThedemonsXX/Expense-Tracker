@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transaction History Logs</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      
+      .logs-dashboard-container {
+        margin-left: 260px;
+        padding: 40px;
+        width: calc(100% - 260px);
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        transition: var(--transition);
+      }
+
+      .logs-section-header {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--text-main);
+        letter-spacing: -0.01em;
+        margin-bottom: -8px;
+        border-left: 4px solid var(--primary);
+        padding-left: 12px;
+      }
+
+      .logs-split-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
+        gap: 24px;
+        width: 100%;
+      }
+
+      .iframe-card {
+        background: var(--bg-card);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        width: 100%;
+        border: 1px solid #e2e8f0;
+        transition: var(--transition);
+      }
+
+      .iframe-card:hover {
+        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+      }
+
+      iframe {
+        width: 100%;
+        min-height: 520px;
+        border: none;
+        display: block;
+      }
+
+      
+      @media (max-width: 768px) {
+        .logs-dashboard-container {
+          margin-left: 0;
+          width: 100%;
+          max-width: 100vw;
+          padding: 20px 14px;
+          gap: 24px;
+        }
+
+        .dashboard-header,
+        body.menu-hidden .dashboard-header {
+          padding-left: 56px;
+          padding-top: 4px;
+        }
+
+        .dashboard-header h1 {
+          font-size: 1.35rem;
+        }
+
+        .logs-section-header {
+          font-size: 1.05rem;
+        }
+
+        .logs-split-grid {
+          gap: 16px;
+        }
+
+        iframe {
+          min-height: 440px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="menu">
+      <img src="images/open.png" alt="App Logo" id="menu-toggle" />
+      <a href="index.html">Home</a>
+      <a href="logs.html" class="active">Logs</a>
+      <a href="saving.html">Savings</a>
+    </div>
+
+    <div class="logs-dashboard-container">
+      <header class="dashboard-header">
+        <h1>Transaction History Logs</h1>
+      </header>
+
+      <h2 class="logs-section-header">Financial Cashflow</h2>
+      <div class="logs-split-grid">
+        <div class="iframe-card">
+          <iframe id="Expense-logs" src="logsExpenses.html"></iframe>
+        </div>
+
+        <div class="iframe-card">
+          <iframe id="Income-logs" src="logsIncome.html"></iframe>
+        </div>
+      </div>
+
+      <h2 class="logs-section-header">Category Structure</h2>
+      <div class="iframe-card" style="width: 100%;">
+        <iframe id="Category-logs" src="logsCategory.html"></iframe>
+      </div>
+    </div>
+
+    <script>
+      let date4check = new Date();
+      let day = date4check.getDate();
+      let month = date4check.getMonth();
+      let year = date4check.getFullYear();
+      let lastDayOfMonth = new Date(year, month + 1, 0).getDate();
+
+      if (day === lastDayOfMonth) {
+        let OldLogs = JSON.parse(localStorage.getItem("OldLogs")) || [];
+
+        let expenseLogs = JSON.parse(localStorage.getItem("LogsExpenses")) || [];
+        OldLogs.push(...expenseLogs);
+        localStorage.setItem("LogsExpenses", JSON.stringify([]));
+
+        let categoryLogs = JSON.parse(localStorage.getItem("LogsCategory")) || [];
+        OldLogs.push(...categoryLogs);
+        localStorage.setItem("LogsCategory", JSON.stringify([]));
+
+        let incomeLogs = JSON.parse(localStorage.getItem("LogsIncome")) || [];
+        OldLogs.push(...incomeLogs);
+        localStorage.setItem("LogsIncome", JSON.stringify([]));
+
+        localStorage.setItem("OldLogs", JSON.stringify(OldLogs));
+      }
+
+      const toggleBtn = document.getElementById("menu-toggle");
+
+      if (window.innerWidth <= 768) {
+        document.body.classList.add("menu-hidden");
+      }
+
+      toggleBtn.addEventListener("click", () => {
+        document.body.classList.toggle("menu-hidden");
+      });
+    </script>
+  </body>
+</html>

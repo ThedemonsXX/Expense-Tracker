@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Income Logs Frame</title>
+    <style>
+      /* --- Design System & Tokens (Synced with main app) --- */
+      :root {
+        --bg-card: #ffffff;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --accent-red: #ef4444;
+        --border-color: #e2e8f0;
+        --border-radius: 12px;
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      /* Clean reset optimized for iframe embeddings */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background-color: transparent; /* Allows parent container background to show through seamlessly */
+        color: var(--text-main);
+        padding: 4px; /* Buffer to prevent box-shadow clipping inside iframe */
+        overflow-x: hidden;
+      }
+
+      /* The Frame Container */
+      .frame-container {
+        background: var(--bg-card);
+        border-radius: var(--border-radius);
+        box-shadow:
+          0 4px 6px -1px rgb(0 0 0 / 0.05),
+          0 2px 4px -2px rgb(0 0 0 / 0.05);
+        border: 1px solid var(--border-color);
+        padding: 24px;
+        width: 100%;
+      }
+
+      .frame-title {
+        margin-bottom: 20px;
+        color: var(--text-main);
+        font-size: 1.2rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      /* Layout constraints for responsive internal scrolling */
+      .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+      }
+
+      /* Styled Table */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+      }
+
+      th {
+        background-color: #f8fafc;
+        color: var(--text-muted);
+        font-weight: 600;
+        padding: 14px 16px;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid var(--border-color);
+      }
+
+      td {
+        padding: 14px 16px;
+        color: var(--text-main);
+        border-bottom: 1px solid var(--border-color);
+        font-size: 0.95rem;
+        vertical-align: middle;
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      tr {
+        transition: var(--transition);
+      }
+
+      tr:hover {
+        background-color: #f8fafc;
+      }
+
+      /* Modern Micro-Destructive Delete Button */
+      .Delete-Transaction {
+        background-color: transparent;
+        color: var(--accent-red);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        outline: none;
+      }
+
+      .Delete-Transaction:hover {
+        background-color: var(--accent-red);
+        color: #ffffff;
+        border-color: var(--accent-red);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.15);
+      }
+
+      .Delete-Transaction:active {
+        transform: translateY(1px);
+      }
+
+    </style>
+  </head>
+  <body>
+  
+    <div class="frame-container">
+      <h2 class="frame-title">Income Logs</h2>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Amount</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+
+      let logs = [];
+      const tbody = document.getElementById("tbody");
+
+      function loadLogs() {
+        tbody.innerHTML = "";
+        logs = JSON.parse(localStorage.getItem("LogsIncome")) || [];
+        let box = document.createDocumentFragment();
+
+        for (let i = 0; i < logs.length; i++) {
+          let tr = document.createElement("tr");
+          tr.setAttribute("data-logid", i);
+          tr.setAttribute("data-amount", logs[i]["amount"]);
+          tr.setAttribute("data-CanBeDeleted", logs[i]["CanBeDeleted"]);
+
+          for (let key in logs[i]) {
+            if (!(key === "CanBeDeleted")) {
+              let td = document.createElement("td");
+              td.textContent = logs[i][key];
+              tr.appendChild(td);
+            }
+          }
+          let tdAction = document.createElement("td");
+          let deletebtn = document.createElement("button");
+          deletebtn.classList.add("Delete-Transaction");
+          deletebtn.textContent = "Delete";
+
+          tdAction.appendChild(deletebtn);
+          tr.appendChild(tdAction);
+          box.appendChild(tr);
+        }
+        tbody.appendChild(box);
+      }
+
+      loadLogs();
+
+      tbody.addEventListener("click", (e) => {
+        if (e.target.classList.contains("Delete-Transaction")) {
+          let tr = e.target.closest("tr");
+
+          let amount = Number(tr.dataset.amount);
+          let logid = Number(tr.dataset.logid);
+
+          let data_income = JSON.parse(localStorage.getItem("Income")) || 0;
+
+          data_income -= amount;
+
+          logs.splice(logid, 1);
+
+          localStorage.setItem("Income", JSON.stringify(data_income));
+          localStorage.setItem("LogsIncome", JSON.stringify(logs));
+
+          loadLogs();
+        }
+      });
+    </script>
+  </body>
+</html>

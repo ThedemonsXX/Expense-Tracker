@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Old Logs Frame</title>
+</head>
+<body>
+    <table>
+        <tbody id="tbody">
+
+        </tbody>
+    </table>
+    <script>
+        let oldlogs = JSON.parse(localStorage.getItem("OldLogs")) || [];
+        const  tbody = document.getElementById("tbody")
+        let box = document.createDocumentFragment();
+        for(let log of oldlogs){
+            let tr = document.createElement("tr")
+            for(let key in log){
+                let td = document.createElement("td");
+                td.textContent = log[key];
+                tr.appendChild(td)
+            
+            }
+            box.appendChild(tr)
+        }
+        tbody.appendChild(box)
+
+    </script>
+</body>
+</html>

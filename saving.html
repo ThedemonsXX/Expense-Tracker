@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Savings Analytics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      h4 {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--text-main);
+        margin-bottom: -12px;
+        padding-left: 4px;
+      }
+
+      .dashboard-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .dashboard-header h1 {
+        color: var(--text-main);
+        letter-spacing: -0.5px;
+      }
+
+      canvas {
+        width: 100% !important;
+        height: 100% !important;
+      }
+
+      iframe {
+        background-color: transparent;
+      }
+
+      #clear-demo-stats {
+        border: none;
+        outline: none;
+        font-family: inherit;
+        cursor: pointer;
+
+        background-color: #ef4444;
+        color: white;
+
+        padding: 14px 28px;
+        border-radius: 12px;
+
+        font-size: 0.95rem;
+        font-weight: 600;
+
+        transition: var(--transition);
+        box-shadow: var(--shadow);
+      }
+
+      #clear-demo-stats:hover {
+        background-color: #dc2626;
+        transform: translateY(-2px);
+      }
+
+      #clear-demo-stats:active {
+        transform: translateY(1px);
+      }
+
+      .category-canva-container iframe {
+        border: none;
+        width: 100%;
+        height: 100%;
+        border-radius: var(--border-radius);
+      }
+
+      .complex-dashboard > h4 {
+        margin-bottom: -4px;
+      }
+
+      .category-canva-container,
+      .Income-vs-Expense {
+        transition: var(--transition);
+      }
+
+      .category-canva-container:hover,
+      .Income-vs-Expense:hover {
+        transform: translateY(-2px);
+        box-shadow:
+          0 10px 15px -3px rgb(0 0 0 / 0.08),
+          0 4px 6px -4px rgb(0 0 0 / 0.08);
+      }
+
+      @media (max-width: 768px) {
+        h4 {
+          font-size: 1rem;
+          margin-bottom: -6px;
+        }
+
+        .dashboard {
+          padding-bottom: 100px;
+        }
+
+        #clear-demo-stats {
+          width: 90%;
+          max-width: 320px;
+          padding: 13px;
+          font-size: 0.9rem;
+        }
+
+        .dashboard-header {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 8px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="menu">
+      <img src="images/open.png" alt="App Logo" id="menu-toggle" />
+      <a href="index.html">Home</a>
+      <a href="logs.html">Logs</a>
+      <a href="saving.html" class="active">Savings</a>
+    </div>
+
+    <div class="dashboard">
+      <header class="dashboard-header">
+        <h1>Savings & Analytics</h1>
+      </header>
+      <h4>Month Insights</h4>
+      <div class="complex-dashboard">
+        <div class="category-canva-container">
+          <canvas id="Income"></canvas>
+        </div>
+        <div class="Income-vs-Expense">
+          <canvas id="expense"></canvas>
+        </div>
+        <div class="category-canva-container">
+          <canvas id="saving"></canvas>
+        </div>
+      </div>
+
+      <div class="complex-dashboard" style="grid-template-columns: 1fr">
+        <h4>Old Logs</h4>
+        <div
+          class="category-canva-container"
+          style="height: 450px; padding: 0; overflow: hidden"
+        >
+          <iframe
+            src="oldlogs.html"
+            frameborder="0"
+            style="
+              width: 100%;
+              height: 100%;
+              border-radius: var(--border-radius);
+            "
+          ></iframe>
+        </div>
+      </div>
+      <div style="width: 100%; text-align: center; margin-top: 24px">
+        <button id="clear-demo-stats">Clear Demo</button>
+      </div>
+    </div>
+
+    <script>
+      let income_chart = document.getElementById("Income");
+      let expense_chart = document.getElementById("expense");
+      let saving_chart = document.getElementById("saving");
+      if (!JSON.parse(localStorage.getItem("FirstTime"))) {
+        localStorage.setItem(
+          "MonthsInsights",
+          JSON.stringify([
+            {
+              month: 0 + 1,
+              income: 25000,
+              expenses: 15000,
+              saving: (100 - (15000 * 100) / 25000).toFixed(2),
+            },
+            {
+              month: 1 + 1,
+              income: 15000,
+              expenses: 8500.25,
+              saving: (100 - (8500.25 * 100) / 15000).toFixed(2),
+            },
+            {
+              month: 2 + 1,
+              income: 5000,
+              expenses: 2500,
+              saving: (100 - (2500 * 100) / 5000).toFixed(2),
+            },
+          ]),
+        );
+        localStorage.setItem("FirstTime", "true");
+      }
+      let monthinsight =
+        JSON.parse(localStorage.getItem("MonthsInsights")) || [];
+
+      let results = [[], [], [], []];
+      for (let item of monthinsight) {
+        results[0].push(item.month);
+        results[1].push(item.expenses);
+        results[2].push(item.income);
+        results[3].push(item.saving);
+      }
+      // Reusable options config for Chart.js to ensure responsive stretching
+      const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "top" },
+        },
+      };
+
+      new Chart(income_chart, {
+        type: "bar",
+        data: {
+          labels: results[0],
+          datasets: [
+            {
+              label: "Income en $ By Month",
+              data: results[2],
+              backgroundColor: "#6366f1", // Matches var(--primary)
+            },
+          ],
+        },
+        options: chartOptions,
+      });
+
+      new Chart(expense_chart, {
+        type: "bar",
+        data: {
+          labels: results[0],
+          datasets: [
+            {
+              label: "Expenses en $ By Month",
+              data: results[1],
+              backgroundColor: "#ef4444", // Red to signify outflow
+            },
+          ],
+        },
+        options: chartOptions,
+      });
+
+      new Chart(saving_chart, {
+        type: "bar",
+        data: {
+          labels: results[0],
+          datasets: [
+            {
+              label: "Savings en % By Month ",
+              data: results[3],
+              backgroundColor: "#22c55e", // Green to signify balance retention
+            },
+          ],
+        },
+        options: chartOptions,
+      });
+
+      // Simple Menu Toggle Logic to match your style.css states
+      document.getElementById("menu-toggle").addEventListener("click", () => {
+        document.body.classList.toggle("menu-hidden");
+      });
+      document
+        .getElementById("clear-demo-stats")
+        .addEventListener("click", () => {
+          localStorage.removeItem("MonthsInsights");
+          location.reload();
+        });
+    </script>
+  </body>
+</html>
